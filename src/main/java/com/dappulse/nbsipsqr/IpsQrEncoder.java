@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * Format: TAG:value|TAG:value|...|TAG:value
  * Spec: NBS IPS QR code specification v01, UTF-8, fields ordered per the standard.
  */
-class IpsQrEncoder {
+public class IpsQrEncoder {
 
     private static final String VERSION = "01";
     private static final String CHARSET = "1";
@@ -22,7 +22,7 @@ class IpsQrEncoder {
     private static final Pattern ACCOUNT_PATTERN = Pattern.compile("\\d{18}");
     private static final Pattern PAYMENT_CODE_PATTERN = Pattern.compile("\\d{3}");
 
-    String encode(IpsQrPayload payload) {
+    public String encode(IpsQrPayload payload) {
         String account = payload.creditorAccount().replace("-", "");
         validate(payload, account);
 

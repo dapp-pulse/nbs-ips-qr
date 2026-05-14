@@ -1,35 +1,37 @@
 package com.dappulse.nbsipsqr;
 
-import org.junit.jupiter.api.Test;
+import static com.dappulse.nbsipsqr.IpsQrPayload.IdentificationCode.EK;
+import static com.dappulse.nbsipsqr.IpsQrPayload.IdentificationCode.PR;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class IpsQrEncoderTest {
 
     private final IpsQrEncoder encoder = new IpsQrEncoder();
 
-    // 18-digit account, once as plain digits and once formatted with dashes
     private static final String ACCOUNT_PLAIN = "111123456789012311";
     private static final String ACCOUNT_DASHES = "111-1234567890123-11";
+
+    // --- Encoding ---
 
     @Test
     void encode_minimalPayload_producesCorrectString() {
         IpsQrPayload payload = createIpsQrPayload(ACCOUNT_PLAIN, "1500.00");
 
-        String result = encoder.encode(payload);
-
-        assertEquals(
-                "K:PR|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o.|I:RSD1500,00",
-                result
-        );
+        assertThat(encoder.encode(payload))
+                .isEqualTo("K:PR|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o.|I:RSD1500,00");
     }
 
     @Test
     void encode_allFieldsProvided_producesCorrectString() {
         IpsQrPayload payload = new IpsQrPayload(
-                IpsQrPayload.IdentificationCode.EK,
+                EK,
                 ACCOUNT_PLAIN,
                 "Acme d.o.o., Beograd",
                 "RSD",
@@ -40,13 +42,9 @@ class IpsQrEncoderTest {
                 "Uplata po fakturi 123"
         );
 
-        String result = encoder.encode(payload);
-
-        assertEquals(
-                "K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
-                        + "|O:222987654321098700|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123",
-                result
-        );
+        assertThat(encoder.encode(payload))
+                .isEqualTo("K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
+                        + "|O:222987654321098700|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
     }
 
     @Test
@@ -55,42 +53,130 @@ class IpsQrEncoderTest {
 
         String result = encoder.encode(payload);
 
-        assertTrue(result.contains("R:" + ACCOUNT_PLAIN), "dashes must be stripped from account in output");
-        assertFalse(result.contains("-"), "output must not contain any dashes");
+        assertThat(result).contains("R:" + ACCOUNT_PLAIN);
+        assertThat(result).doesNotContain("-");
     }
 
     @Test
+    void usesIdentificationCodeName() {
+        var payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
+                null, null, null, null);
+        assertThat(encoder.encode(payload)).startsWith("K:EK|");
+    }
+
+    @Test
+    void alwaysInjectsVersionAndCharset() {
+        String encoded = encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "1.00"));
+        assertThat(encoded).contains("|V:01|").contains("|C:1|");
+    }
+
+    @Test
+    void noTrailingDelimiter() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "50.00"))).doesNotEndWith("|");
+    }
+
+    @Test
+    void skipNullOptionalFields() {
+        assertOptionalFieldsAbsent(null, null, null, null);
+    }
+
+    @Test
+    void skipBlankOptionalFields() {
+        assertOptionalFieldsAbsent("  ", "", "   ", "");
+    }
+
+    // --- Amount formatting ---
+
+    @Test
+    void formatsWholeAmountWithTwoDecimalPlaces() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "9999"))).contains("I:RSD9999,00");
+    }
+
+    @Test
+    void formatsDecimalAmountWithComma() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "3596.13"))).contains("I:RSD3596,13");
+    }
+
+    @Test
+    void roundsAmountHalfUp() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "10.005"))).contains("I:RSD10,01");
+    }
+
+    // --- Validation ---
+
+    @Test
     void validate_accountWithDashesThatYieldWrongDigitCount_throws() {
-        // "123-456789-01" → "12345678901" = 11 digits, not 18
         IpsQrPayload payload = createIpsQrPayload("123-456789-01", "100.00");
 
-        assertThrows(IllegalArgumentException.class, () -> encoder.encode(payload));
+        assertThatThrownBy(() -> encoder.encode(payload))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void validate_amountBelowMinimum_throws() {
-        IpsQrPayload payload = createIpsQrPayload(ACCOUNT_PLAIN, "0.00");
-
-        assertThrows(IllegalArgumentException.class, () -> encoder.encode(payload));
+        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "0.00")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("amount");
     }
 
     @Test
-    void validate_paymentCodeNotThreeDigits_throws() {
-        IpsQrPayload payload = new IpsQrPayload(
-                IpsQrPayload.IdentificationCode.PR,
-                ACCOUNT_PLAIN,
-                "Acme d.o.o.",
-                "RSD",
-                new BigDecimal("100.00"),
-                null, null, "12", null
-        );
+    void rejectsNegativeAmount() {
+        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "-1.00")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("amount");
+    }
 
-        assertThrows(IllegalArgumentException.class, () -> encoder.encode(payload));
+    @Test
+    void rejectsAmountAboveMaximum() {
+        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "100000000000000.00")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("amount");
+    }
+
+    @Test
+    void acceptsMinimumAmount() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "0.01"))).contains("I:RSD0,01");
+    }
+
+    @Test
+    void acceptsMaximumAmount() {
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "99999999999999.99")))
+                .contains("I:RSD99999999999999,99");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1", "12", "1234", "ab3", "1 2"})
+    void rejectsPaymentCodeNotExactlyThreeDigits(String sf) {
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
+                null, null, sf, null);
+        assertThatThrownBy(() -> encoder.encode(payload))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("paymentCode");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"189", "263", "289", "000"})
+    void acceptsValidThreeDigitPaymentCode(String sf) {
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
+                null, null, sf, null);
+        assertThat(encoder.encode(payload)).contains("|SF:" + sf);
+    }
+
+    // --- Helpers ---
+
+    private void assertOptionalFieldsAbsent(String debtor, String debtorAccount, String paymentCode, String purpose) {
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
+                debtor, debtorAccount, paymentCode, purpose);
+        assertThat(encoder.encode(payload))
+                .doesNotContain("|O:")
+                .doesNotContain("|P:")
+                .doesNotContain("|SF:")
+                .doesNotContain("|S:");
     }
 
     private IpsQrPayload createIpsQrPayload(String account, String amount) {
         return new IpsQrPayload(
-                IpsQrPayload.IdentificationCode.PR,
+                PR,
                 account,
                 "Acme d.o.o.",
                 "RSD",
