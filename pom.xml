@@ -11,6 +11,27 @@
 
     <name>NBS IPS QR</name>
     <description>Library for generating, parsing and validating NBS IPS QR codes</description>
+    <url>https://github.com/dapp-pulse/nbs-ips-qr</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/dapp-pulse/nbs-ips-qr.git</connection>
+        <developerConnection>scm:git:ssh://github.com/dapp-pulse/nbs-ips-qr.git</developerConnection>
+        <url>https://github.com/dapp-pulse/nbs-ips-qr</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <java.version>21</java.version>
