@@ -15,8 +15,10 @@ class IpsQrEncoderTest {
 
     private final IpsQrEncoder encoder = new IpsQrEncoder();
 
-    private static final String ACCOUNT_PLAIN = "111123456789012311";
-    private static final String ACCOUNT_DASHES = "111-1234567890123-11";
+    private static final String ACCOUNT_PLAIN = "111123456789012383";
+    private static final String ACCOUNT_DASHES = "111-1234567890123-83";
+    private static final String SHORT_ACCOUNT = "12332132118";
+    private static final String NORMALIZED_SHORT_ACCOUNT = "123000000032132118";
 
     // --- Encoding ---
 
@@ -36,7 +38,7 @@ class IpsQrEncoderTest {
                 "Acme d.o.o., Beograd",
                 "RSD",
                 new BigDecimal("3596.13"),
-                "222987654321098700",
+                "222987654321098714",
                 "Pera Peric, Beograd",
                 "289",
                 "Uplata po fakturi 123"
@@ -44,7 +46,7 @@ class IpsQrEncoderTest {
 
         assertThat(encoder.encode(payload))
                 .isEqualTo("K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
-                        + "|O:222987654321098700|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
+                        + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
     }
 
     @Test
@@ -55,6 +57,21 @@ class IpsQrEncoderTest {
 
         assertThat(result).contains("R:" + ACCOUNT_PLAIN);
         assertThat(result).doesNotContain("-");
+    }
+
+    @Test
+    void encode_shortAccount_normalizesWithLeftPaddedAccountNumber() {
+        IpsQrPayload payload = createIpsQrPayload(SHORT_ACCOUNT, "100.00");
+
+        assertThat(encoder.encode(payload)).contains("R:" + NORMALIZED_SHORT_ACCOUNT);
+    }
+
+    @Test
+    void encode_debtorAccount_normalizesOptionalAccount() {
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
+                SHORT_ACCOUNT, "Pera Peric", null, null);
+
+        assertThat(encoder.encode(payload)).contains("|O:" + NORMALIZED_SHORT_ACCOUNT);
     }
 
     @Test
@@ -110,6 +127,30 @@ class IpsQrEncoderTest {
 
         assertThatThrownBy(() -> encoder.encode(payload))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void validate_accountWithLetters_throws() {
+        IpsQrPayload payload = createIpsQrPayload("111-123456789012A-83", "100.00");
+
+        assertThatThrownBy(() -> encoder.encode(payload))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("only digits");
+    }
+
+    @Test
+    void validate_accountWithInvalidControlDigits_throws() {
+        IpsQrPayload payload = createIpsQrPayload("111123456789012311", "100.00");
+
+        assertThatThrownBy(() -> encoder.encode(payload))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("control digits");
+    }
+
+    @Test
+    void normalizeAccount_acceptsWhitespaceAndDashes() {
+        assertThat(IpsQrEncoder.normalizeAccount(" 123-321321-18 "))
+                .isEqualTo(NORMALIZED_SHORT_ACCOUNT);
     }
 
     @Test
