@@ -54,7 +54,7 @@ public class IpsQrEncoder {
         return sb.toString();
     }
 
-    public static String normalizeAccount(String account) {
+     static String normalizeAccount(String account) {
         String sanitized = sanitizeAccount(account);
         if (!ACCOUNT_PATTERN.matcher(sanitized).matches()) {
             throw new IllegalArgumentException(
