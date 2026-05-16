@@ -54,19 +54,16 @@ public class IpsQrEncoder {
         return sb.toString();
     }
 
-    /**
-     * Removes common separators and returns the canonical 18-digit Serbian bank account number.
-     */
     public static String normalizeAccount(String account) {
         String sanitized = sanitizeAccount(account);
         if (!ACCOUNT_PATTERN.matcher(sanitized).matches()) {
             throw new IllegalArgumentException(
-                    "account must contain only digits, dashes, or whitespace, got: " + account);
+                    "IQE_001: account must contain only digits, dashes, or whitespace, got: " + account);
         }
         if (sanitized.length() < BANK_CODE_LENGTH + 1 + CONTROL_NUMBER_LENGTH
                 || sanitized.length() > NORMALIZED_ACCOUNT_LENGTH) {
             throw new IllegalArgumentException(
-                    "account must contain bank code (3 digits), account number (1-13 digits), "
+                    "IQE_002: account must contain bank code (3 digits), account number (1-13 digits), "
                             + "and control number (2 digits), got: " + account);
         }
 
@@ -74,28 +71,14 @@ public class IpsQrEncoder {
         String accountNumber = sanitized.substring(BANK_CODE_LENGTH, sanitized.length() - CONTROL_NUMBER_LENGTH);
         String controlNumber = sanitized.substring(sanitized.length() - CONTROL_NUMBER_LENGTH);
 
-        if (bankCode.length() != BANK_CODE_LENGTH) {
-            throw new IllegalArgumentException("bank code must be exactly 3 digits, got: " + bankCode);
-        }
-        if (accountNumber.length() > ACCOUNT_NUMBER_LENGTH) {
-            throw new IllegalArgumentException("account number must be up to 13 digits, got: " + accountNumber);
-        }
-        if (controlNumber.length() != CONTROL_NUMBER_LENGTH) {
-            throw new IllegalArgumentException("control number must be exactly 2 digits, got: " + controlNumber);
-        }
-
         String normalized = bankCode + leftPadWithZeros(accountNumber) + controlNumber;
-        if (normalized.length() != NORMALIZED_ACCOUNT_LENGTH) {
-            throw new IllegalArgumentException(
-                    "normalized account must be exactly 18 digits, got: " + normalized);
-        }
         validateControlDigits(normalized, account);
         return normalized;
     }
 
     private static String sanitizeAccount(String account) {
         if (account == null) {
-            throw new NullPointerException("account is required");
+            throw new NullPointerException("IQE_004: account is required");
         }
         return account.replaceAll("[-\\s]", "");
     }
@@ -110,7 +93,7 @@ public class IpsQrEncoder {
         int actualControl = Integer.parseInt(normalized.substring(NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH));
         if (actualControl != expectedControl) {
             throw new IllegalArgumentException(
-                    "account control digits are invalid, got: " + original);
+                    "IQE_003: account control digits are invalid, got: " + original);
         }
     }
 
@@ -126,13 +109,13 @@ public class IpsQrEncoder {
         BigDecimal amount = payload.amount();
         if (amount.compareTo(AMOUNT_MIN) < 0 || amount.compareTo(AMOUNT_MAX) > 0) {
             throw new IllegalArgumentException(
-                    "amount must be between " + AMOUNT_MIN + " and " + AMOUNT_MAX + ", got: " + amount);
+                    "IQE_005: amount must be between " + AMOUNT_MIN + " and " + AMOUNT_MAX + ", got: " + amount);
         }
 
         String paymentCode = payload.paymentCode();
         if (paymentCode != null && !paymentCode.isBlank() && !PAYMENT_CODE_PATTERN.matcher(paymentCode).matches()) {
             throw new IllegalArgumentException(
-                    "paymentCode (SF) must be exactly 3 digits, got: " + paymentCode);
+                    "IQE_006: paymentCode (SF) must be exactly 3 digits, got: " + paymentCode);
         }
     }
 
