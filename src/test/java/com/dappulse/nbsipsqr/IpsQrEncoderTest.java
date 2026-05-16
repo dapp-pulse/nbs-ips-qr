@@ -122,20 +122,30 @@ class IpsQrEncoderTest {
     // --- Validation ---
 
     @Test
-    void validate_accountWithDashesThatYieldWrongDigitCount_throws() {
-        IpsQrPayload payload = createIpsQrPayload("123-456789-01", "100.00");
-
-        assertThatThrownBy(() -> encoder.encode(payload))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void validate_accountWithLetters_throws() {
         IpsQrPayload payload = createIpsQrPayload("111-123456789012A-83", "100.00");
 
         assertThatThrownBy(() -> encoder.encode(payload))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("only digits");
+                .hasMessageStartingWith("IQE_001:");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "12345", // 5-digits, too short.
+            "1234567890123456789" // 19-digits, to long.
+    })
+    void normalizeAccount_rejectsAccountWithWrongDigitCount(String account) {
+        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(account))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageStartingWith("IQE_002:");
+    }
+
+    @Test
+    void normalizeAccount_rejectsNullAccount() {
+        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageStartingWith("IQE_004:");
     }
 
     @Test
@@ -144,7 +154,7 @@ class IpsQrEncoderTest {
 
         assertThatThrownBy(() -> encoder.encode(payload))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("control digits");
+                .hasMessageStartingWith("IQE_003:");
     }
 
     @Test
@@ -157,21 +167,21 @@ class IpsQrEncoderTest {
     void validate_amountBelowMinimum_throws() {
         assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "0.00")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("amount");
+                .hasMessageStartingWith("IQE_005:");
     }
 
     @Test
     void rejectsNegativeAmount() {
         assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "-1.00")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("amount");
+                .hasMessageStartingWith("IQE_005:");
     }
 
     @Test
     void rejectsAmountAboveMaximum() {
         assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "100000000000000.00")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("amount");
+                .hasMessageStartingWith("IQE_005:");
     }
 
     @Test
@@ -192,7 +202,7 @@ class IpsQrEncoderTest {
                 null, null, sf, null);
         assertThatThrownBy(() -> encoder.encode(payload))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("paymentCode");
+                .hasMessageStartingWith("IQE_006:");
     }
 
     @ParameterizedTest
