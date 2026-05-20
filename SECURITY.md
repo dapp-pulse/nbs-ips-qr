@@ -14,7 +14,12 @@ Please report all security vulnerabilities via the **GitHub Private Vulnerabilit
 3. Click **Report a vulnerability**.
 4. Fill in the details of the vulnerability.
 
-We will acknowledge your report within 48 hours and work with you to verify and resolve the issue.
+If the GitHub Private Vulnerability Reporting feature is unavailable, you may alternatively email us at **contact@dappulse.com**.
+
+### Response Timeline
+- **48 hours** — We will acknowledge receipt of your report.
+- **7 days** — We will confirm the vulnerability and communicate our intended course of action.
+- **90 days** — We aim to resolve the issue within 90 days. We ask that you refrain from public disclosure until a fix has been released or this period has elapsed, whichever comes first.
 
 ## Vulnerability Disclosure Process
 1. **Report:** Researcher submits a report privately via GitHub.

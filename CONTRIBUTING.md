@@ -9,6 +9,10 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 - **Report bugs or suggest features:** Open an issue in this repository. Please provide a clear description and, if possible, steps to reproduce the bug.
 - **Join the discussion:** If you are planning a large change, please open an issue first to discuss the approach.
 
+## Prerequisites
+
+See the [Build section in README.md](README.md#build) for required tooling (JDK, Maven).
+
 ## Development Workflow
 
 ### 1. Developer Certificate of Origin (DCO)
@@ -33,7 +37,7 @@ Our CI will block any PRs that do not include the sign-off.
 
 - **Java**: Run mvn test before submitting.
 
-### 5. Dependency Hygiene
+### 4. Dependency Hygiene
 We aim for minimal dependencies.
 
 - Do not add new dependencies without explicit team approval in a GitHub issue.
@@ -45,5 +49,9 @@ Maintainers handle the releases. When a feature or fix is ready:
 1. We tag the release (e.g., v1.0.1).
 2. The CI workflow builds, signs, and publishes the artifacts to Maven Central.
 3. A GitHub Release is created automatically.
+
+## License
+
+By contributing, you agree that your contributions will be dual-licensed under the **[MIT License](LICENSE-MIT) OR [Apache License 2.0](LICENSE-APACHE)**, at the recipient's option — the same terms as the rest of the project.
 
 Happy coding!
