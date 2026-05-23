@@ -89,6 +89,8 @@ public class IpsQrEncoder {
 
     private static void validateControlDigits(String normalized, String original) {
         String accountWithoutControl = normalized.substring(0, NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH);
+        // NBS account control digits use mod97: control = 98 - ((account without control + "00") % 97).
+        // The resulting full account number has a mod97 remainder of 1.
         int expectedControl = 98 - mod97(accountWithoutControl + "00");
         int actualControl = Integer.parseInt(normalized.substring(NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH));
         if (actualControl != expectedControl) {
