@@ -1,4 +1,5 @@
 package com.dappulse.nbsipsqr;
+package com.dappulse.nbsipsqr;
 
 import static com.dappulse.nbsipsqr.IpsQrPayload.IdentificationCode.PR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,11 @@ import org.junit.jupiter.api.Test;
  * Validates generated IPS QR strings against the official NBS validator API.
  * Disabled by default — run manually during development to verify spec
  * compliance.
+ * Disabled by default — run manually during development to verify spec
+ * compliance.
  *
+ * Endpoint: POST https://nbs.rs/QRcode/api/qr/v1/validate Body: plain text IPS
+ * QR string
  * Endpoint: POST https://nbs.rs/QRcode/api/qr/v1/validate Body: plain text IPS
  * QR string
  */
@@ -30,26 +35,32 @@ class IpsQrNbsValidationE2eTest {
     private final HttpClient http = HttpClient.newBuilder()
                                               .connectTimeout(Duration.ofSeconds(10))
                                               .build();
+                                              .connectTimeout(Duration.ofSeconds(10))
+                                              .build();
 
     @Test
     void mandatoryFieldsOnlyPassesNbsValidation() throws Exception {
         String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD",
-                new BigDecimal("3596.13"), null, null, null, null));
+                new BigDecimal("3596.13"), null, null, null, null, null, null));
 
         var response = validate(qrString);
 
+        assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
+                                         .isEqualTo(200);
         assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
                                          .isEqualTo(200);
     }
 
     @Test
     void allFieldsPassNbsValidation() throws Exception {
-        String qrString = encoder.encode(
-                new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD", new BigDecimal("3596.13"),
-                        null, "Marko Marković, Bulevar 12, Novi Sad", "289", "Proforma faktura 2024-001"));
+        String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD",
+                new BigDecimal("3596.13"), null, "Marko Marković, Bulevar 12, Novi Sad", "289",
+                "Proforma faktura 2024-001", 00, "1234-1234"));
 
         var response = validate(qrString);
 
+        assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
+                                         .isEqualTo(200);
         assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
                                          .isEqualTo(200);
     }
@@ -57,10 +68,12 @@ class IpsQrNbsValidationE2eTest {
     @Test
     void cyrillicPurposePassesNbsValidation() throws Exception {
         String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Предузеће д.о.о., Београд", "RSD",
-                new BigDecimal("1500.00"), null, null, "289", "Профактура 2024-001"));
+                new BigDecimal("1500.00"), null, null, "289", "Профактура 2024-001", 00, "1234-1234"));
 
         var response = validate(qrString);
 
+        assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
+                                         .isEqualTo(200);
         assertThat(response.statusCode()).as("NBS validate response for: %s\nBody: %s", qrString, response.body())
                                          .isEqualTo(200);
     }
@@ -69,6 +82,11 @@ class IpsQrNbsValidationE2eTest {
 
     private HttpResponse<String> validate(String qrString) throws Exception {
         var request = HttpRequest.newBuilder()
+                                 .uri(URI.create(NBS_VALIDATE_URL))
+                                 .header("Content-Type", "text/plain; charset=UTF-8")
+                                 .timeout(Duration.ofSeconds(10))
+                                 .POST(HttpRequest.BodyPublishers.ofString(qrString))
+                                 .build();
                                  .uri(URI.create(NBS_VALIDATE_URL))
                                  .header("Content-Type", "text/plain; charset=UTF-8")
                                  .timeout(Duration.ofSeconds(10))
