@@ -7,6 +7,9 @@ import java.util.Objects;
  * Typed model for an NBS IPS QR payload. Tag names from the NBS IPS QR
  * specification are noted on each field. Mandatory fields are enforced at
  * construction time.
+ * Typed model for an NBS IPS QR payload. Tag names from the NBS IPS QR
+ * specification are noted on each field. Mandatory fields are enforced at
+ * construction time.
  */
 public record IpsQrPayload(IdentificationCode identificationCode, // K — mandatory
         String creditorAccount, // R — mandatory, payee bank account number
@@ -16,10 +19,14 @@ public record IpsQrPayload(IdentificationCode identificationCode, // K — manda
         String debtorAccount, // O — optional, payer bank account number
         String debtorName, // P — optional, payer name and address
         String paymentCode, // SF — optional, 3-digit payment code (šifra plaćanja)
-        String paymentPurpose // S — optional, payment purpose text (svrha plaćanja)
+        String paymentPurpose, // S — optional, payment purpose text (svrha plaćanja)
+        Integer model, // optional, validacija za referenceNumber e.g. 97, 11
+        String referenceNumber // RO - optional, poziv na broj
 ) {
 
     /**
+     * NBS IPS QR identification code (tag K). Declares the context in which the QR
+     * code is presented.
      * NBS IPS QR identification code (tag K). Declares the context in which the QR
      * code is presented.
      */
@@ -27,6 +34,7 @@ public record IpsQrPayload(IdentificationCode identificationCode, // K — manda
         PR, // printed invoice / payment slip
         PT, // QR displayed by merchant at POS
         PK, // QR displayed by customer at POS
+        EK // e-commerce
         EK // e-commerce
     }
 
