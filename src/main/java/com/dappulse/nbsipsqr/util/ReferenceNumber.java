@@ -1,16 +1,12 @@
 package com.dappulse.nbsipsqr.util;
 
-import java.math.BigInteger;
 import java.util.regex.Pattern;
 
-public class ReferenceNumber {
+public class ReferenceNumber extends Control {
 
-    public static final String EMPTY = "";
     public static final int V99 = 99;
     public static final int V97 = 97;
     public static final int V10 = 10;
-    public static final int V2 = 2;
-    public static final int V0 = 0;
     public static final char A = 'A';
     public static final Pattern PATTERN_NUMBERS_LETTERS_SPACES = Pattern.compile("[A-Z0-9 -]{1,23}");
     public static final Pattern PATTERN_NUMBERS_LETTERS = Pattern.compile("[A-Z0-9]{1,23}");
@@ -39,6 +35,7 @@ public class ReferenceNumber {
                 : number;
     }
 
+    @Override
     public Validation validate() {
         if (model < V0 || model > V99) {
             return Validation.ofError("Model must be in [0,99]");
@@ -55,9 +52,10 @@ public class ReferenceNumber {
             return Validation.ofError("Number is not in boundary [A-Z0-9] size 23");
         }
         String transformNumber = transformNumber();
-        return validateControlNumber(transformNumber);
+        return validateControlNumber(transformNumber, model);
     }
 
+    @Override
     public String transformNumber() {
         StringBuilder sb = new StringBuilder();
         for (char ch : number.toCharArray()) {
@@ -74,40 +72,9 @@ public class ReferenceNumber {
         return sb.toString();
     }
 
-    public Validation validateControlNumber(String transformed) {
-        if (model == V0) {
-            return Validation.of();
-        }
-        BigInteger number = new BigInteger(transformed.substring(V2));
-        BigInteger controlNumber = new BigInteger(transformed.substring(V0, V2));
-        BigInteger model = BigInteger.valueOf((long) this.model);
-        BigInteger boudary = model.add(BigInteger.ONE);
-        BigInteger calcControlNumber = boudary.subtract(number.mod(model));
-        boolean match = calcControlNumber.compareTo(controlNumber) == V0;
-        return match
-                ? Validation.of()
-                : Validation.ofError(String.format("Control numbers not match given: %s calculated: %s",
-                        controlNumber.toString(), calcControlNumber.toString()));
-    }
-
     public String toNumber() {
         return number.isEmpty()
                 ? EMPTY
                 : String.format("%02d%s", model, number);
     }
-
-    public record Validation(String message) {
-        public static Validation of() {
-            return new Validation(EMPTY);
-        }
-
-        public static Validation ofError(String message) {
-            return new Validation(message);
-        }
-
-        public boolean hasError() {
-            return !message.isEmpty();
-        }
-    }
-
 }

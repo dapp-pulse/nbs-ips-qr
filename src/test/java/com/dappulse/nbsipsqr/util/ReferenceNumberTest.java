@@ -117,7 +117,7 @@ class ReferenceNumberTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "", "A", "0013A456", "00A12Z34", "12345678912345678912345" })
+    @ValueSource(strings = { "4313A456", "02A12Z34", "63345678912345678912345" })
     void ofTEST_numberIsGoodModelIs97(String data) {
         // GIVEN
         Integer model = 97;
@@ -127,7 +127,7 @@ class ReferenceNumberTest {
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
-        assertTrue(actual);
+        assertFalse(actual);
     }
 
     @Test
@@ -175,7 +175,7 @@ class ReferenceNumberTest {
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
         String transformed = referenceNumber.transformNumber();
         // WHEN
-        boolean actual = referenceNumber.validateControlNumber(transformed)
+        boolean actual = referenceNumber.validateControlNumber(transformed, model)
                                         .hasError();
         // THEN
         assertFalse(actual);
