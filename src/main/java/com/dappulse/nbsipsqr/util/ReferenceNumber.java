@@ -106,7 +106,7 @@ public class ReferenceNumber {
         }
 
         public boolean hasError() {
-            return message.isEmpty();
+            return !message.isEmpty();
         }
     }
 

@@ -15,8 +15,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = null;
         String number = "1234-1234";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.toNumber();
         // THEN
         assertEquals("001234-1234", actual);
@@ -27,8 +27,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 0;
         String number = "1234";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.toNumber();
         // THEN
         assertEquals("001234", actual);
@@ -39,8 +39,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 0;
         String number = null;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.toNumber();
         // THEN
         assertEquals("", actual);
@@ -52,8 +52,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 0;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.toNumber();
         // THEN
         assertEquals("", actual);
@@ -65,12 +65,12 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = data;
         String number = "1234";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
-        assertFalse(actual);
+        assertTrue(actual);
     }
 
     @ParameterizedTest
@@ -79,12 +79,12 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 97;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
-        assertFalse(actual);
+        assertTrue(actual);
     }
 
     @ParameterizedTest
@@ -93,12 +93,12 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 11;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
-        assertFalse(actual);
+        assertTrue(actual);
     }
 
     @ParameterizedTest
@@ -108,22 +108,22 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 0;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
-        assertTrue(actual);
+        assertFalse(actual);
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "", "A", "0013A456", "00A12Z34", "12345678912345678912345" })
     void ofTEST_numberIsGoodModelIs97(String data) {
         // GIVEN
-        Integer model = 0;
+        Integer model = 97;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         boolean actual = referenceNumber.validate()
                                         .hasError();
         // THEN
@@ -135,8 +135,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 11;
         String number = "123AB123";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.transformNumber();
         // THEN
         assertEquals("123101112300", actual);
@@ -147,8 +147,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 11;
         String number = "123K L123";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.transformNumber();
         // THEN
         assertEquals("123202112300", actual);
@@ -159,8 +159,8 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 11;
         String number = "12-3Y-Z1-23";
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
         String actual = referenceNumber.transformNumber();
         // THEN
         assertEquals("123343512300", actual);
@@ -172,13 +172,13 @@ class ReferenceNumberTest {
         // GIVEN
         Integer model = 97;
         String number = data;
-        // WHEN
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
         String transformed = referenceNumber.transformNumber();
+        // WHEN
         boolean actual = referenceNumber.validateControlNumber(transformed)
                                         .hasError();
         // THEN
-        assertTrue(actual);
+        assertFalse(actual);
     }
 
 }
