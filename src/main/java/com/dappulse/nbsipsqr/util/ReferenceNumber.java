@@ -7,6 +7,8 @@ public class ReferenceNumber extends Control {
     public static final int V99 = 99;
     public static final int V97 = 97;
     public static final int V10 = 10;
+    public static final String DASH = "-";
+    public static final String SPACE = " ";
     public static final char A = 'A';
     public static final Pattern PATTERN_NUMBERS_LETTERS_SPACES = Pattern.compile("[A-Z0-9 -]{1,23}");
     public static final Pattern PATTERN_NUMBERS_LETTERS = Pattern.compile("[A-Z0-9]{1,23}");
@@ -73,8 +75,9 @@ public class ReferenceNumber extends Control {
     }
 
     public String toNumber() {
+        String replaced = number.replaceAll(SPACE, DASH);
         return number.isEmpty()
                 ? EMPTY
-                : String.format("%02d%s", model, number);
+                : String.format("%02d%s", model, replaced);
     }
 }

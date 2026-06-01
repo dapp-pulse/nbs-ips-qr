@@ -22,10 +22,12 @@ See the [Build section in README.md](README.md#build) for required tooling (JDK,
 
 ### 1. Developer Certificate of Origin (DCO)
 We use the **DCO** to manage contributions. You must certify that you have the right to submit your changes by signing off your commits:
+
 ```bash
 git commit -s -m "Your commit message"
 ```
 If you forget to sign off, you can amend your last commit:
+
 ```bash
 git commit --amend -s
 ```

@@ -23,6 +23,18 @@ class ReferenceNumberTest {
     }
 
     @Test
+    void ofTEST_modelIs0numberWithSpace() {
+        // GIVEN
+        Integer model = null;
+        String number = "1234 1234";
+        ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
+        // WHEN
+        String actual = referenceNumber.toNumber();
+        // THEN
+        assertEquals("001234-1234", actual);
+    }
+
+    @Test
     void ofTEST_modelIsZero() {
         // GIVEN
         Integer model = 0;
@@ -167,7 +179,7 @@ class ReferenceNumberTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "54567812154820012", "14123412" })
+    @ValueSource(strings = { "54567812154820012", "14123412", "86A1" })
     void ofTEST_validateControllNumber(String data) {
         // GIVEN
         Integer model = 97;

@@ -36,13 +36,17 @@ class IpsQrEncoderTest {
     void encode_allFieldsProvided_producesCorrectString() {
         IpsQrPayload payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o., Beograd", "RSD",
                 new BigDecimal("3596.13"), "222987654321098714", "Pera Peric, Beograd", "289", "Uplata po fakturi 123",
-                97, "22456789");
+                97, "50456789");
 
         assertThat(encoder.encode(payload)).isEqualTo(
                 "K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
+<<<<<<< HEAD
         assertThat(encoder.encode(payload)).isEqualTo(
                 "K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
                         + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
+=======
+                        + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123|RO:9750456789");
+>>>>>>> e98cd22 (fix tests, formatting, and contributing docs)
     }
 
     @Test
