@@ -11,17 +11,18 @@ import java.util.Objects;
  * specification are noted on each field. Mandatory fields are enforced at
  * construction time.
  */
-public record IpsQrPayload(IdentificationCode identificationCode, // K — mandatory
-        String creditorAccount, // R — mandatory, payee bank account number
-        String creditorName, // N — mandatory, payee name and location (e.g. "Acme d.o.o., Beograd")
-        String currency, // I prefix — mandatory, e.g. "RSD"
-        BigDecimal amount, // I value — mandatory
-        String debtorAccount, // O — optional, payer bank account number
-        String debtorName, // P — optional, payer name and address
-        String paymentCode, // SF — optional, 3-digit payment code (šifra plaćanja)
-        String paymentPurpose, // S — optional, payment purpose text (svrha plaćanja)
-        Integer model, // optional, validacija za referenceNumber e.g. 97, 11
-        String referenceNumber // RO - optional, poziv na broj
+public record IpsQrPayload(
+        IdentificationCode identificationCode, // K — mandatory
+        String creditorAccount,                // R — mandatory, payee bank account number
+        String creditorName,                   // N — mandatory, payee name and location (e.g. "Acme d.o.o., Beograd")
+        String currency,                       // I prefix — mandatory, e.g. "RSD"
+        BigDecimal amount,                     // I value — mandatory
+        String debtorAccount,                  // O — optional, payer bank account number
+        String debtorName,                     // P — optional, payer name and address
+        String paymentCode,                    // SF — optional, 3-digit payment code (šifra plaćanja)
+        String paymentPurpose,                 // S — optional, payment purpose text (svrha plaćanja)
+        Integer model,                         // optional, validacija za referenceNumber e.g. 97, 11
+        String referenceNumber                 // RO - optional, poziv na broj
 ) {
 
     /**

@@ -187,7 +187,7 @@ class ReferenceNumberTest {
         ReferenceNumber referenceNumber = ReferenceNumber.of(model, number);
         String transformed = referenceNumber.transformNumber();
         // WHEN
-        boolean actual = referenceNumber.validateControlNumber(transformed, model)
+        boolean actual = referenceNumber.validateControlNumber(transformed)
                                         .hasError();
         // THEN
         assertFalse(actual);

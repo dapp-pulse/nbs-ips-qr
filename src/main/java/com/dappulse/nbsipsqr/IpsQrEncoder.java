@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.regex.Pattern;
 
-import com.dappulse.nbsipsqr.util.Control.Validation;
 import com.dappulse.nbsipsqr.util.ReferenceNumber;
+import com.dappulse.nbsipsqr.util.ReferenceNumber.Validation;
 
 /**
  * Encodes an {@link IpsQrPayload} into the pipe-delimited NBS IPS QR text
