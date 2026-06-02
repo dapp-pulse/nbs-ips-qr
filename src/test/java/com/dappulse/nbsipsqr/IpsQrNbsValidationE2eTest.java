@@ -1,4 +1,4 @@
-package com.dappulse.reportgenerator.qr;
+package com.dappulse.nbsipsqr;
 
 import static com.dappulse.nbsipsqr.IpsQrPayload.IdentificationCode.PR;
 import static org.assertj.core.api.Assertions.assertThat;
