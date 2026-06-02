@@ -26,26 +26,17 @@ class IpsQrEncoderTest {
     void encode_minimalPayload_producesCorrectString() {
         IpsQrPayload payload = createIpsQrPayload(ACCOUNT_PLAIN, "1500.00");
 
-        assertThat(encoder.encode(payload))
-                .isEqualTo("K:PR|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o.|I:RSD1500,00");
+        assertThat(encoder.encode(payload)).isEqualTo(
+                "K:PR|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o.|I:RSD1500,00");
     }
 
     @Test
     void encode_allFieldsProvided_producesCorrectString() {
-        IpsQrPayload payload = new IpsQrPayload(
-                EK,
-                ACCOUNT_PLAIN,
-                "Acme d.o.o., Beograd",
-                "RSD",
-                new BigDecimal("3596.13"),
-                "222987654321098714",
-                "Pera Peric, Beograd",
-                "289",
-                "Uplata po fakturi 123"
-        );
+        IpsQrPayload payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o., Beograd", "RSD",
+                new BigDecimal("3596.13"), "222987654321098714", "Pera Peric, Beograd", "289", "Uplata po fakturi 123");
 
-        assertThat(encoder.encode(payload))
-                .isEqualTo("K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
+        assertThat(encoder.encode(payload)).isEqualTo(
+                "K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
                         + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
     }
 
@@ -68,23 +59,24 @@ class IpsQrEncoderTest {
 
     @Test
     void encode_debtorAccount_normalizesOptionalAccount() {
-        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
-                SHORT_ACCOUNT, "Pera Peric", null, null);
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), SHORT_ACCOUNT,
+                "Pera Peric", null, null);
 
         assertThat(encoder.encode(payload)).contains("|O:" + NORMALIZED_SHORT_ACCOUNT);
     }
 
     @Test
     void usesIdentificationCodeName() {
-        var payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
-                null, null, null, null);
+        var payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null,
+                null, null);
         assertThat(encoder.encode(payload)).startsWith("K:EK|");
     }
 
     @Test
     void alwaysInjectsVersionAndCharset() {
         String encoded = encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "1.00"));
-        assertThat(encoded).contains("|V:01|").contains("|C:1|");
+        assertThat(encoded).contains("|V:01|")
+                           .contains("|C:1|");
     }
 
     @Test
@@ -125,63 +117,61 @@ class IpsQrEncoderTest {
     void validate_accountWithLetters_throws() {
         IpsQrPayload payload = createIpsQrPayload("111-123456789012A-83", "100.00");
 
-        assertThatThrownBy(() -> encoder.encode(payload))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_001:");
+        assertThatThrownBy(() -> encoder.encode(payload)).isInstanceOf(IllegalArgumentException.class)
+                                                         .hasMessageStartingWith("IQE_001:");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "12345", // 5-digits, too short.
+    @ValueSource(strings = { "12345", // 5-digits, too short.
             "1234567890123456789" // 19-digits, to long.
     })
     void normalizeAccount_rejectsAccountWithWrongDigitCount(String account) {
-        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(account))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_002:");
+        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(account)).isInstanceOf(IllegalArgumentException.class)
+                                                                        .hasMessageStartingWith("IQE_002:");
     }
 
     @Test
     void normalizeAccount_rejectsNullAccount() {
-        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageStartingWith("IQE_004:");
+        assertThatThrownBy(() -> IpsQrEncoder.normalizeAccount(null)).isInstanceOf(NullPointerException.class)
+                                                                     .hasMessageStartingWith("IQE_004:");
     }
 
     @Test
     void validate_accountWithInvalidControlDigits_throws() {
         IpsQrPayload payload = createIpsQrPayload("111123456789012311", "100.00");
 
-        assertThatThrownBy(() -> encoder.encode(payload))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_003:");
+        assertThatThrownBy(() -> encoder.encode(payload)).isInstanceOf(IllegalArgumentException.class)
+                                                         .hasMessageStartingWith("IQE_003:");
     }
 
     @Test
     void normalizeAccount_acceptsWhitespaceAndDashes() {
-        assertThat(IpsQrEncoder.normalizeAccount(" 123-321321-18 "))
-                .isEqualTo(NORMALIZED_SHORT_ACCOUNT);
+        assertThat(IpsQrEncoder.normalizeAccount(" 123-321321-18 ")).isEqualTo(NORMALIZED_SHORT_ACCOUNT);
     }
 
     @Test
     void validate_amountBelowMinimum_throws() {
-        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "0.00")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_005:");
+        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "0.00"))).isInstanceOf(
+                IllegalArgumentException.class)
+                                                                                           .hasMessageStartingWith(
+                                                                                                   "IQE_005:");
     }
 
     @Test
     void rejectsNegativeAmount() {
-        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "-1.00")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_005:");
+        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "-1.00"))).isInstanceOf(
+                IllegalArgumentException.class)
+                                                                                            .hasMessageStartingWith(
+                                                                                                    "IQE_005:");
     }
 
     @Test
     void rejectsAmountAboveMaximum() {
-        assertThatThrownBy(() -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "100000000000000.00")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_005:");
+        assertThatThrownBy(
+                () -> encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "100000000000000.00"))).isInstanceOf(
+                        IllegalArgumentException.class)
+                                                                                              .hasMessageStartingWith(
+                                                                                                      "IQE_005:");
     }
 
     @Test
@@ -191,48 +181,39 @@ class IpsQrEncoderTest {
 
     @Test
     void acceptsMaximumAmount() {
-        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "99999999999999.99")))
-                .contains("I:RSD99999999999999,99");
+        assertThat(encoder.encode(createIpsQrPayload(ACCOUNT_PLAIN, "99999999999999.99"))).contains(
+                "I:RSD99999999999999,99");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1", "12", "1234", "ab3", "1 2"})
+    @ValueSource(strings = { "1", "12", "1234", "ab3", "1 2" })
     void rejectsPaymentCodeNotExactlyThreeDigits(String sf) {
-        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
-                null, null, sf, null);
-        assertThatThrownBy(() -> encoder.encode(payload))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageStartingWith("IQE_006:");
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null, sf,
+                null);
+        assertThatThrownBy(() -> encoder.encode(payload)).isInstanceOf(IllegalArgumentException.class)
+                                                         .hasMessageStartingWith("IQE_006:");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"189", "263", "289", "000"})
+    @ValueSource(strings = { "189", "263", "289", "000" })
     void acceptsValidThreeDigitPaymentCode(String sf) {
-        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
-                null, null, sf, null);
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null, sf,
+                null);
         assertThat(encoder.encode(payload)).contains("|SF:" + sf);
     }
 
     // --- Helpers ---
 
     private void assertOptionalFieldsAbsent(String debtor, String debtorAccount, String paymentCode, String purpose) {
-        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"),
-                debtor, debtorAccount, paymentCode, purpose);
-        assertThat(encoder.encode(payload))
-                .doesNotContain("|O:")
-                .doesNotContain("|P:")
-                .doesNotContain("|SF:")
-                .doesNotContain("|S:");
+        var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), debtor,
+                debtorAccount, paymentCode, purpose);
+        assertThat(encoder.encode(payload)).doesNotContain("|O:")
+                                           .doesNotContain("|P:")
+                                           .doesNotContain("|SF:")
+                                           .doesNotContain("|S:");
     }
 
     private IpsQrPayload createIpsQrPayload(String account, String amount) {
-        return new IpsQrPayload(
-                PR,
-                account,
-                "Acme d.o.o.",
-                "RSD",
-                new BigDecimal(amount),
-                null, null, null, null
-        );
+        return new IpsQrPayload(PR, account, "Acme d.o.o.", "RSD", new BigDecimal(amount), null, null, null, null);
     }
 }

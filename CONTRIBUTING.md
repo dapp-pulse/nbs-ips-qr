@@ -2,6 +2,11 @@
 
 First off, thank you for considering contributing to `nbs-ips-qr`! It is people like you who make this library a reliable tool for the community.
 
+## Setup Eclipse IDE formatter
+
+In eclipse IDE go to Window > Preferences > Java > Code Style > Formatter > "Import..." choose formatters.xml file from formatter dir.
+Select "Test" formatter go make some changes.
+
 ## Code of Conduct
 By participating in this project, you are expected to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
 
