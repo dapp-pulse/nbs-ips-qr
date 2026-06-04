@@ -2,9 +2,12 @@
 
 Java library for generating NBS IPS QR codes according to the [National Bank of Serbia IPS QR specification](https://ips.nbs.rs/sr_lat).
 
+Reference number is implemnted from specification in `/documents/pdfPreporukeValidacijaLat.pdf` and `/documents/pp_instrumenti_prilog2.pdf`
+
 ## Usage
 
 **Maven**
+
 ```xml
 <dependency>
     <groupId>com.dappulse</groupId>
@@ -14,6 +17,7 @@ Java library for generating NBS IPS QR codes according to the [National Bank of 
 ```
 
 **Gradle**
+
 ```kotlin
 implementation("com.dappulse:nbs-ips-qr:VERSION")
 ```
