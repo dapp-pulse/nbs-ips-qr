@@ -5,10 +5,11 @@ import java.math.RoundingMode;
 import java.util.regex.Pattern;
 
 /**
- * Encodes an {@link IpsQrPayload} into the pipe-delimited NBS IPS QR text string.
+ * Encodes an {@link IpsQrPayload} into the pipe-delimited NBS IPS QR text
+ * string.
  * <p>
- * Format: TAG:value|TAG:value|...|TAG:value
- * Spec: NBS IPS QR code specification v01, UTF-8, fields ordered per the standard.
+ * Format: TAG:value|TAG:value|...|TAG:value Spec: NBS IPS QR code specification
+ * v01, UTF-8, fields ordered per the standard.
  */
 public class IpsQrEncoder {
 
@@ -22,8 +23,8 @@ public class IpsQrEncoder {
     private static final int BANK_CODE_LENGTH = 3;
     private static final int ACCOUNT_NUMBER_LENGTH = 13;
     private static final int CONTROL_NUMBER_LENGTH = 2;
-    private static final int NORMALIZED_ACCOUNT_LENGTH =
-            BANK_CODE_LENGTH + ACCOUNT_NUMBER_LENGTH + CONTROL_NUMBER_LENGTH;
+    private static final int NORMALIZED_ACCOUNT_LENGTH = BANK_CODE_LENGTH + ACCOUNT_NUMBER_LENGTH
+            + CONTROL_NUMBER_LENGTH;
 
     private static final Pattern ACCOUNT_PATTERN = Pattern.compile("[0-9]+");
     private static final Pattern PAYMENT_CODE_PATTERN = Pattern.compile("\\d{3}");
@@ -37,7 +38,8 @@ public class IpsQrEncoder {
         validate(payload);
 
         StringBuilder sb = new StringBuilder();
-        appendField(sb, "K", payload.identificationCode().name());
+        appendField(sb, "K", payload.identificationCode()
+                                    .name());
         appendField(sb, "V", VERSION);
         appendField(sb, "C", CHARSET);
         appendField(sb, "R", creditorAccount);
@@ -54,9 +56,10 @@ public class IpsQrEncoder {
         return sb.toString();
     }
 
-     static String normalizeAccount(String account) {
+    static String normalizeAccount(String account) {
         String sanitized = sanitizeAccount(account);
-        if (!ACCOUNT_PATTERN.matcher(sanitized).matches()) {
+        if (!ACCOUNT_PATTERN.matcher(sanitized)
+                            .matches()) {
             throw new IllegalArgumentException(
                     "IQE_001: account must contain only digits, dashes, or whitespace, got: " + account);
         }
@@ -89,13 +92,13 @@ public class IpsQrEncoder {
 
     private static void validateControlDigits(String normalized, String original) {
         String accountWithoutControl = normalized.substring(0, NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH);
-        // NBS account control digits use mod97: control = 98 - ((account without control + "00") % 97).
+        // NBS account control digits use mod97: control = 98 - ((account without
+        // control + "00") % 97).
         // The resulting full account number has a mod97 remainder of 1.
         int expectedControl = 98 - mod97(accountWithoutControl + "00");
         int actualControl = Integer.parseInt(normalized.substring(NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH));
         if (actualControl != expectedControl) {
-            throw new IllegalArgumentException(
-                    "IQE_003: account control digits are invalid, got: " + original);
+            throw new IllegalArgumentException("IQE_003: account control digits are invalid, got: " + original);
         }
     }
 
@@ -115,20 +118,26 @@ public class IpsQrEncoder {
         }
 
         String paymentCode = payload.paymentCode();
-        if (paymentCode != null && !paymentCode.isBlank() && !PAYMENT_CODE_PATTERN.matcher(paymentCode).matches()) {
+        if (paymentCode != null && !paymentCode.isBlank() && !PAYMENT_CODE_PATTERN.matcher(paymentCode)
+                                                                                  .matches()) {
             throw new IllegalArgumentException(
                     "IQE_006: paymentCode (SF) must be exactly 3 digits, got: " + paymentCode);
         }
     }
 
-    // NBS format: {CURRENCY}{integer},{fraction} — decimal comma, no thousands separator
+    // NBS format: {CURRENCY}{integer},{fraction} — decimal comma, no thousands
+    // separator
     private String formatAmount(String currency, BigDecimal amount) {
-        String plain = amount.setScale(2, RoundingMode.HALF_UP).toPlainString();
+        String plain = amount.setScale(2, RoundingMode.HALF_UP)
+                             .toPlainString();
         return currency + plain.replace('.', ',');
     }
 
     private void appendField(StringBuilder sb, String tag, String value) {
-        sb.append(tag).append(':').append(value).append(DELIMITER);
+        sb.append(tag)
+          .append(':')
+          .append(value)
+          .append(DELIMITER);
     }
 
     private void appendOptional(StringBuilder sb, String tag, String value) {
