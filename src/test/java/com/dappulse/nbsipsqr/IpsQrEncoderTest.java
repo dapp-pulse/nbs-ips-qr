@@ -33,11 +33,12 @@ class IpsQrEncoderTest {
     @Test
     void encode_allFieldsProvided_producesCorrectString() {
         IpsQrPayload payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o., Beograd", "RSD",
-                new BigDecimal("3596.13"), "222987654321098714", "Pera Peric, Beograd", "289", "Uplata po fakturi 123");
+                new BigDecimal("3596.13"), "222987654321098714", "Pera Peric, Beograd", "289", "Uplata po fakturi 123",
+                97, "50456789");
 
         assertThat(encoder.encode(payload)).isEqualTo(
                 "K:EK|V:01|C:1|R:" + ACCOUNT_PLAIN + "|N:Acme d.o.o., Beograd|I:RSD3596,13"
-                        + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123");
+                        + "|O:222987654321098714|P:Pera Peric, Beograd|SF:289|S:Uplata po fakturi 123|RO:9750456789");
     }
 
     @Test
@@ -60,7 +61,7 @@ class IpsQrEncoderTest {
     @Test
     void encode_debtorAccount_normalizesOptionalAccount() {
         var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), SHORT_ACCOUNT,
-                "Pera Peric", null, null);
+                "Pera Peric", null, null, null, null);
 
         assertThat(encoder.encode(payload)).contains("|O:" + NORMALIZED_SHORT_ACCOUNT);
     }
@@ -68,7 +69,7 @@ class IpsQrEncoderTest {
     @Test
     void usesIdentificationCodeName() {
         var payload = new IpsQrPayload(EK, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null,
-                null, null);
+                null, null, null, null);
         assertThat(encoder.encode(payload)).startsWith("K:EK|");
     }
 
@@ -86,12 +87,12 @@ class IpsQrEncoderTest {
 
     @Test
     void skipNullOptionalFields() {
-        assertOptionalFieldsAbsent(null, null, null, null);
+        assertOptionalFieldsAbsent(null, null, null, null, null, null);
     }
 
     @Test
     void skipBlankOptionalFields() {
-        assertOptionalFieldsAbsent("  ", "", "   ", "");
+        assertOptionalFieldsAbsent("  ", "", "   ", "", null, " ");
     }
 
     // --- Amount formatting ---
@@ -189,7 +190,7 @@ class IpsQrEncoderTest {
     @ValueSource(strings = { "1", "12", "1234", "ab3", "1 2" })
     void rejectsPaymentCodeNotExactlyThreeDigits(String sf) {
         var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null, sf,
-                null);
+                null, null, null);
         assertThatThrownBy(() -> encoder.encode(payload)).isInstanceOf(IllegalArgumentException.class)
                                                          .hasMessageStartingWith("IQE_006:");
     }
@@ -198,22 +199,25 @@ class IpsQrEncoderTest {
     @ValueSource(strings = { "189", "263", "289", "000" })
     void acceptsValidThreeDigitPaymentCode(String sf) {
         var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), null, null, sf,
-                null);
+                null, null, null);
         assertThat(encoder.encode(payload)).contains("|SF:" + sf);
     }
 
     // --- Helpers ---
 
-    private void assertOptionalFieldsAbsent(String debtor, String debtorAccount, String paymentCode, String purpose) {
+    private void assertOptionalFieldsAbsent(String debtor, String debtorAccount, String paymentCode, String purpose,
+            Integer model, String referenceNumber) {
         var payload = new IpsQrPayload(PR, ACCOUNT_PLAIN, "Acme d.o.o.", "RSD", new BigDecimal("1.00"), debtor,
-                debtorAccount, paymentCode, purpose);
+                debtorAccount, paymentCode, purpose, model, referenceNumber);
         assertThat(encoder.encode(payload)).doesNotContain("|O:")
                                            .doesNotContain("|P:")
                                            .doesNotContain("|SF:")
-                                           .doesNotContain("|S:");
+                                           .doesNotContain("|S:")
+                                           .doesNotContain("|RO:");
     }
 
     private IpsQrPayload createIpsQrPayload(String account, String amount) {
-        return new IpsQrPayload(PR, account, "Acme d.o.o.", "RSD", new BigDecimal(amount), null, null, null, null);
+        return new IpsQrPayload(PR, account, "Acme d.o.o.", "RSD", new BigDecimal(amount), null, null, null, null, null,
+                null);
     }
 }
