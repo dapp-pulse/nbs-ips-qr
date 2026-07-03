@@ -7,9 +7,6 @@ import java.util.Objects;
  * Typed model for an NBS IPS QR payload. Tag names from the NBS IPS QR
  * specification are noted on each field. Mandatory fields are enforced at
  * construction time.
- * Typed model for an NBS IPS QR payload. Tag names from the NBS IPS QR
- * specification are noted on each field. Mandatory fields are enforced at
- * construction time.
  */
 public record IpsQrPayload(
         IdentificationCode identificationCode, // K — mandatory
@@ -28,14 +25,11 @@ public record IpsQrPayload(
     /**
      * NBS IPS QR identification code (tag K). Declares the context in which the QR
      * code is presented.
-     * NBS IPS QR identification code (tag K). Declares the context in which the QR
-     * code is presented.
      */
     public enum IdentificationCode {
         PR, // printed invoice / payment slip
         PT, // QR displayed by merchant at POS
         PK, // QR displayed by customer at POS
-        EK // e-commerce
         EK // e-commerce
     }
 

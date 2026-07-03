@@ -103,7 +103,7 @@ public class IpsQrEncoder {
         int expectedControl = 98 - mod97(accountWithoutControl + "00");
         int actualControl = Integer.parseInt(normalized.substring(NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH));
         if (actualControl != expectedControl) {
-            throw new IllegalArgumentException("IQE_003: account control digits are invalid, got: " + original);
+            throw new IllegalArgumentException(String.format("IQE_003: account control digits are invalid, got: %s expected: %s", actualControl, expectedControl));
         }
     }
 

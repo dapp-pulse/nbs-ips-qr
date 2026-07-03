@@ -2,7 +2,7 @@
 
 Java library for generating NBS IPS QR codes according to the [National Bank of Serbia IPS QR specification](https://ips.nbs.rs/sr_lat).
 
-Reference number is implemnted from specification in `/documents/pdfPreporukeValidacijaLat.pdf` and `/documents/pp_instrumenti_prilog2.pdf`
+Reference number is implemnted from specification in `/documents/` [pdfPreporukeValidacijaLat.pdf](https://ips.nbs.rs/PDF/pdfPreporukeValidacijaLat.pdf) and [pp_instrumenti_prilog2.pdf](https://www.nbs.rs/export/sites/NBS_site/documents/propisi/propisi-ps/pp_instrumenti_prilog2.pdf)
 
 ## Usage
 

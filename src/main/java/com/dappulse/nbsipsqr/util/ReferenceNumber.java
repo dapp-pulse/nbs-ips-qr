@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 
 public class ReferenceNumber {
 
-    public static final int V99 = 99;
-    public static final int V97 = 97;
-    public static final int V10 = 10;
-    public static final int V2 = 2;
-    public static final int V0 = 0;
+    public static final int V_99 = 99;
+    public static final int V_97 = 97;
+    public static final int V_10 = 10;
+    public static final int V_2 = 2;
+    public static final int V_0 = 0;
     public static final String EMPTY = "";
     public static final String DASH = "-";
     public static final String SPACE = " ";
@@ -31,7 +31,7 @@ public class ReferenceNumber {
 
     public Integer parseModel(Integer model) {
         return model == null
-                ? V0
+                ? V_0
                 : model;
     }
 
@@ -42,13 +42,13 @@ public class ReferenceNumber {
     }
 
     public Validation validate() {
-        if (model < V0 || model > V99) {
+        if (model < V_0 || model > V_99) {
             return Validation.ofError("Model must be in [0,99]");
         }
-        if (model == V0 && number.isEmpty()) {
+        if (model == V_0 && number.isEmpty()) {
             return Validation.of();
         }
-        boolean matches = model == V97
+        boolean matches = model == V_97
                 ? PATTERN_NUMBERS_LETTERS.matcher(number)
                                          .matches()
                 : PATTERN_NUMBERS_LETTERS_SPACES.matcher(number)
@@ -67,25 +67,25 @@ public class ReferenceNumber {
                 sb.append(ch);
             }
             if (Character.isUpperCase(ch)) {
-                int value = ch - A + V10;
+                int value = ch - A + V_10;
                 sb.append(value);
             }
         }
-        sb.append(V0)
-          .append(V0);
+        sb.append(V_0)
+          .append(V_0);
         return sb.toString();
     }
 
     public Validation validateControlNumber(String transformed) {
-        if (this.model == V0) {
+        if (this.model == V_0) {
             return Validation.of();
         }
-        BigInteger number = new BigInteger(transformed.substring(V2));
-        BigInteger controlNumber = new BigInteger(transformed.substring(V0, V2));
+        BigInteger number = new BigInteger(transformed.substring(V_2));
+        BigInteger controlNumber = new BigInteger(transformed.substring(V_0, V_2));
         BigInteger model = BigInteger.valueOf((long) this.model);
         BigInteger boudary = model.add(BigInteger.ONE);
         BigInteger calcControlNumber = boudary.subtract(number.mod(model));
-        boolean match = calcControlNumber.compareTo(controlNumber) == V0;
+        boolean match = calcControlNumber.compareTo(controlNumber) == V_0;
         return match
                 ? Validation.of()
                 : Validation.ofError(String.format("Control number not match given: %s calculated: %s",
