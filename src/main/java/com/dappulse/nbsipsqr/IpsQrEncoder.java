@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.regex.Pattern;
 
+import com.dappulse.nbsipsqr.util.ReferenceNumber;
+import com.dappulse.nbsipsqr.util.ReferenceNumber.Validation;
+
 /**
  * Encodes an {@link IpsQrPayload} into the pipe-delimited NBS IPS QR text
  * string.
@@ -35,7 +38,8 @@ public class IpsQrEncoder {
         if (debtorAccount != null && !debtorAccount.isBlank()) {
             debtorAccount = normalizeAccount(debtorAccount);
         }
-        validate(payload);
+        ReferenceNumber referenceNumber = ReferenceNumber.of(payload.model(), payload.referenceNumber());
+        validate(payload, referenceNumber);
 
         StringBuilder sb = new StringBuilder();
         appendField(sb, "K", payload.identificationCode()
@@ -49,6 +53,7 @@ public class IpsQrEncoder {
         appendOptional(sb, "P", payload.debtorName());
         appendOptional(sb, "SF", payload.paymentCode());
         appendOptional(sb, "S", payload.paymentPurpose());
+        appendOptional(sb, "RO", referenceNumber.toNumber());
 
         if (!sb.isEmpty() && sb.charAt(sb.length() - 1) == DELIMITER) {
             sb.setLength(sb.length() - 1);
@@ -98,7 +103,7 @@ public class IpsQrEncoder {
         int expectedControl = 98 - mod97(accountWithoutControl + "00");
         int actualControl = Integer.parseInt(normalized.substring(NORMALIZED_ACCOUNT_LENGTH - CONTROL_NUMBER_LENGTH));
         if (actualControl != expectedControl) {
-            throw new IllegalArgumentException("IQE_003: account control digits are invalid, got: " + original);
+            throw new IllegalArgumentException(String.format("IQE_003: account control digits are invalid, got: %s expected: %s", actualControl, expectedControl));
         }
     }
 
@@ -110,7 +115,7 @@ public class IpsQrEncoder {
         return remainder;
     }
 
-    private void validate(IpsQrPayload payload) {
+    private void validate(IpsQrPayload payload, ReferenceNumber referenceNumber) {
         BigDecimal amount = payload.amount();
         if (amount.compareTo(AMOUNT_MIN) < 0 || amount.compareTo(AMOUNT_MAX) > 0) {
             throw new IllegalArgumentException(
@@ -122,6 +127,10 @@ public class IpsQrEncoder {
                                                                                   .matches()) {
             throw new IllegalArgumentException(
                     "IQE_006: paymentCode (SF) must be exactly 3 digits, got: " + paymentCode);
+        }
+        Validation validation = referenceNumber.validate();
+        if (validation.hasError()) {
+            throw new IllegalArgumentException(validation.message());
         }
     }
 

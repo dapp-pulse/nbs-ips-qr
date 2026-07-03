@@ -34,7 +34,7 @@ class IpsQrNbsValidationE2eTest {
     @Test
     void mandatoryFieldsOnlyPassesNbsValidation() throws Exception {
         String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD",
-                new BigDecimal("3596.13"), null, null, null, null));
+                new BigDecimal("3596.13"), null, null, null, null, null, null));
 
         var response = validate(qrString);
 
@@ -44,9 +44,9 @@ class IpsQrNbsValidationE2eTest {
 
     @Test
     void allFieldsPassNbsValidation() throws Exception {
-        String qrString = encoder.encode(
-                new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD", new BigDecimal("3596.13"),
-                        null, "Marko Marković, Bulevar 12, Novi Sad", "289", "Proforma faktura 2024-001"));
+        String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Acme d.o.o., Beograd", "RSD",
+                new BigDecimal("3596.13"), null, "Marko Marković, Bulevar 12, Novi Sad", "289",
+                "Proforma faktura 2024-001", 11, "081234-1234"));
 
         var response = validate(qrString);
 
@@ -57,7 +57,7 @@ class IpsQrNbsValidationE2eTest {
     @Test
     void cyrillicPurposePassesNbsValidation() throws Exception {
         String qrString = encoder.encode(new IpsQrPayload(PR, "845000000040484987", "Предузеће д.о.о., Београд", "RSD",
-                new BigDecimal("1500.00"), null, null, "289", "Профактура 2024-001"));
+                new BigDecimal("1500.00"), null, null, "289", "Профактура 2024-001", 00, "1234-1234"));
 
         var response = validate(qrString);
 
