@@ -35,3 +35,37 @@ We prioritize security updates for the current major version. We generally do no
 - **No malicious dependencies:** All dependencies are pinned and verified.
 - **Signed commits:** We follow a DCO-based workflow to ensure code provenance.
 - **Automated Scanning:** We run daily automated security scans and CodeQL analysis.
+
+## Dependency Security Policy
+
+### 21-Day Quarantine Rule
+
+To guard against supply-chain attacks, this project enforces a **21-day quarantine** on all newly published dependency versions — across all semver levels (patch, minor, and major):
+
+- A version is eligible for use only if it was published **at least 21 days ago**.
+- This is enforced automatically: Dependabot is configured with `cooldown.default-days: 21` in [`.github/dependabot.yml`](.github/dependabot.yml), so update PRs are not opened until a version clears the quarantine window.
+- **Security-update PRs bypass cooldown** — Dependabot always proposes a fix for a known vulnerability immediately, even if the patched version is newer than 21 days. Review those PRs on their own merits rather than delaying for the sake of the rule.
+
+**Rationale**: Compromised packages are frequently caught within days or weeks of being published. A 21-day window gives the security community time to detect and report malicious releases before this project adopts them.
+
+### Exception Process
+
+If a version under the 21-day threshold must be adopted urgently (and it is not a security-update PR):
+
+1. Manually bump the dependency in `pom.xml` outside of Dependabot, and open a PR that documents the urgency and the exact publish date.
+2. **System architect** adds a written approval comment on the PR.
+3. The PR may then be merged with the approval documented in the PR history.
+
+### Auditing Current Dependencies
+
+Check the publish date of a dependency on Maven Central:
+```
+https://central.sonatype.com/artifact/<groupId>/<artifactId>/<version>
+```
+The "Published" date is shown at the top of the version detail page.
+
+To list available dependency/plugin updates locally:
+```bash
+mvn versions:display-dependency-updates
+mvn versions:display-plugin-updates
+```
